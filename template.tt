@@ -54,13 +54,15 @@ case $EVENT in
         ;;
     CREATE)
         echo "Create a new user"
+        expire_datetwentyonemin=$(date +'%Y-%m-%d %T' --date="{{ us.expire }} 21 minutes")
+        expire_date=$(date --date="$expire_datetwentyonemin" '+%s')
 
         PAYLOAD="$(cat <<-EOF
         {
           "username": "us_{{ us.id }}",
           "data_limit": 0,
-          "expire_date": null,
-          "expire_strategy": "never",
+          "expire_date": "$expire_date",
+          "expire_strategy": "fixed_date",
           "service_ids": [{{ server.settings.marzneshin.services }}],
           "note": "SHM_info- {{ user.login }}, {{ user.full_name }}, https://t.me/{{ user.settings.telegram.login }}"
         }
@@ -90,7 +92,25 @@ EOF
     ACTIVATE)
         echo "Activate user"
 
+        expire_datetwentyonemin=$(date +'%Y-%m-%d %T' --date="{{ us.expire }} 21 minutes")
+        expire_date=$(date --date="$expire_datetwentyonemin" '+%s')
+
+        PAYLOAD="$(cat <<-EOF
+        {
+          "username": "us_{{ us.id }}",
+          "expire_date": "$expire_date",
+          "expire_strategy": "fixed_date"
+        }
+EOF
+        )"
+
         get_marzneshin_token
+        curl -sk -XPUT \
+          "$MARZNESHIN_HOST/api/users/us_{{ us.id }}" \
+          -H "Authorization: Bearer $TOKEN" \
+          -H 'Content-Type: application/json' \
+          -d "$PAYLOAD"
+
         USER_CFG=$(curl -sk -XPOST \
           "$MARZNESHIN_HOST/api/users/us_{{ us.id }}/enable" \
           -H "Authorization: Bearer $TOKEN" \
@@ -113,8 +133,25 @@ EOF
         ;;
     BLOCK)
         echo "Block user"
+        expire_datetwentyonemin=$(date +'%Y-%m-%d %T' --date="{{ us.expire }} 21 minutes")
+        expire_date=$(date --date="$expire_datetwentyonemin" '+%s')
+
+        PAYLOAD="$(cat <<-EOF
+        {
+          "username": "us_{{ us.id }}",
+          "expire_date": "$expire_date",
+          "expire_strategy": "fixed_date"
+        }
+EOF
+        )"
 
         get_marzneshin_token
+        curl -sk -XPUT \
+          "$MARZNESHIN_HOST/api/users/us_{{ us.id }}" \
+          -H "Authorization: Bearer $TOKEN" \
+          -H 'Content-Type: application/json' \
+          -d "$PAYLOAD"
+
         USER_CFG=$(curl -sk -XPOST \
           "$MARZNESHIN_HOST/api/users/us_{{ us.id }}/disable" \
           -H "Authorization: Bearer $TOKEN" \
@@ -151,8 +188,25 @@ EOF
         ;;
     PROLONGATE)
         echo "Reset user counters"
+        expire_datetwentyonemin=$(date +'%Y-%m-%d %T' --date="{{ us.expire }} 21 minutes")
+        expire_date=$(date --date="$expire_datetwentyonemin" '+%s')
+
+        PAYLOAD="$(cat <<-EOF
+        {
+          "username": "us_{{ us.id }}",
+          "expire_date": "$expire_date",
+          "expire_strategy": "fixed_date"
+        }
+EOF
+        )"
 
         get_marzneshin_token
+        curl -sk -XPUT \
+          "$MARZNESHIN_HOST/api/users/us_{{ us.id }}" \
+          -H "Authorization: Bearer $TOKEN" \
+          -H 'Content-Type: application/json' \
+          -d "$PAYLOAD"
+
         USER_CFG=$(curl -sk -XPOST \
           "$MARZNESHIN_HOST/api/users/us_{{ us.id }}/reset" \
           -H "Authorization: Bearer $TOKEN")
